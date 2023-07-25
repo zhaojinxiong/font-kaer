@@ -33,7 +33,9 @@
  * 可以使用滑动窗口内的最大值与最小值，因此我们也可以分别使用两个单调队列解决本题。
  * 在实际代码中, 我们使用一个单调递增的队列queMin 维护最小值，一个单调递减的队列queMax 维护最大值。这样我们
  * 只需要计算两个队列的队首的差值，即可知道当前窗口是否满足条件。
- *
+ *queMax：队列里面的元素要么比nums[right]大，要么就nums[right]最大，队头始终维护当前碰到的最大值，递减
+
+queMin：队列里面的元素要么比nums[right]小，要么就nums[right]最小，队头始终维护当前碰到的最小值，递增
  */
 
 var longestSubarray = function (nums, limit) {
@@ -42,10 +44,10 @@ var longestSubarray = function (nums, limit) {
 
   const n = nums.length;
   let left = 0;
-  let rigth = 0;
+  let right = 0;
   let ret = 0;
 
-  while (rigth < n) {
+  while (right < n) {
     while (queMax.length && queMax[queMax.length - 1] < nums[right]) {
       queMax.pop();
     }
@@ -55,7 +57,7 @@ var longestSubarray = function (nums, limit) {
     queMax.push(nums[right]);
     queMin.push(nums[right]);
 
-    while (queMax.length && queMin.length && queMax[0] - queMin[0] > limit) {
+    while (queMax[0] - queMin[0] > limit) {
       if (nums[left] === queMin[0]) {
         queMin.shift();
       }
@@ -64,8 +66,39 @@ var longestSubarray = function (nums, limit) {
       }
       left++;
     }
-    ret = Math.max(ret, rigth - left + 1);
-    rigth++;
+    ret = Math.max(ret, right - left + 1);
+    right++;
   }
   return ret;
- };
+};
+
+var longestSubarray = function (nums, limit) {
+  let maxQueue = [];
+  let minQueue = [];
+  let left = 0;
+  let right = 0;
+  let maxLen = -Infinity;
+  while (right < nums.length) {
+    while (maxQueue.length && nums[maxQueue.at(-1)] <= nums[right]) {
+      maxQueue.pop();
+    }
+    while (minQueue.length && nums[minQueue.at(-1)] >= nums[right]) {
+      minQueue.pop();
+    }
+    maxQueue.push(right);
+    minQueue.push(right);
+
+    while (nums[maxQueue[0]] - nums[minQueue[0]] > limit) {
+      if (left >= maxQueue[0]) {
+        maxQueue.shift();
+      }
+      if (left >= minQueue[0]) {
+        minQueue.shift();
+      }
+      left++;
+    }
+    maxLen = Math.max(maxLen, right - left + 1);
+    right++;
+  }
+  return maxLen;
+};
